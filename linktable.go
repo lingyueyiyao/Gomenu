@@ -54,6 +54,7 @@ func AddLinkTableNode(pLinkTable *tLinkTable, pNode *tLinkTableNode) int {
 	}
 	pNode.pNext = nil
 	pLinkTable.mutex.Lock()
+	defer pLinkTable.mutex.Unlock()
 	if pLinkTable.pHead == nil {
 		pLinkTable.pHead = pNode
 	}
@@ -64,7 +65,6 @@ func AddLinkTableNode(pLinkTable *tLinkTable, pNode *tLinkTableNode) int {
 		pLinkTable.pTail = pNode
 	}
 	pLinkTable.SumOfNode += 1
-	pLinkTable.mutex.Unlock()
 	return SUCCESS
 }
 
@@ -73,13 +73,13 @@ func DelLinkTableNode(pLinkTable *tLinkTable, pNode *tLinkTableNode) int {
 		return FAILURE
 	}
 	pLinkTable.mutex.Lock()
+	defer pLinkTable.mutex.Unlock()
 	if pLinkTable.pHead == pNode {
 		pLinkTable.pHead = pLinkTable.pHead.pNext
 		pLinkTable.SumOfNode -= 1
 		if pLinkTable.SumOfNode == 0 {
 			pLinkTable.pTail = nil
 		}
-		pLinkTable.mutex.Unlock()
 		return SUCCESS
 	}
 	pTempNode := pLinkTable.pHead
@@ -90,13 +90,26 @@ func DelLinkTableNode(pLinkTable *tLinkTable, pNode *tLinkTableNode) int {
 			if pLinkTable.SumOfNode == 0 {
 				pLinkTable.pTail = nil
 			}
-			pLinkTable.mutex.Unlock()
 			return SUCCESS
 		}
 		pTempNode = pTempNode.pNext
 	}
-	pLinkTable.mutex.Unlock()
 	return FAILURE
+}
+
+func SearchLinkTableNode(pLinkTable *tLinkTable,
+	Condition func(pNode *tLinkTableNode, args interface{}) int, args interface{}) *tLinkTableNode {
+	if pLinkTable == nil || Condition == nil {
+		return nil
+	}
+	pNode := pLinkTable.pHead
+	for pNode != nil {
+		if Condition(pNode, args) == SUCCESS {
+			return pNode
+		}
+		pNode = pNode.pNext
+	}
+	return nil
 }
 
 func GetLinkTableHead(pLinkTable *tLinkTable) *tLinkTableNode {

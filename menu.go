@@ -22,15 +22,18 @@ type DataNode struct {
 
 type tDataNode = DataNode
 
-func FindCmd(head *tLinkTable, cmd string) *tDataNode {
-	var pNode *tDataNode = (*tDataNode)(unsafe.Pointer(GetLinkTableHead(head)))
-	for pNode != nil {
-		if pNode.cmd == cmd {
-			return pNode
-		}
-		pNode = (*tDataNode)(unsafe.Pointer(GetNextLinkTableNode(head, (*tLinkTableNode)(unsafe.Pointer(pNode)))))
+var cmd string
+
+func SearchCondition(pLinkTableNode *tLinkTableNode, args interface{}) int {
+	pNode := (*tDataNode)(unsafe.Pointer(pLinkTableNode))
+	if pNode.cmd == args {
+		return SUCCESS
 	}
-	return nil
+	return FAILURE
+}
+
+func FindCmd(head *tLinkTable, cmd string) *tDataNode {
+	return (*tDataNode)(unsafe.Pointer(SearchLinkTableNode(head, SearchCondition, cmd)))
 }
 
 func ShowAllCmd(head *tLinkTable) int {
@@ -71,7 +74,6 @@ func init() {
 
 func main() {
 
-	var cmd string
 	for {
 		fmt.Print("Input a cmd number > ")
 		fmt.Scanln(&cmd)
